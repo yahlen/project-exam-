@@ -11,36 +11,28 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Get Date
-      id: get-date
-      run: |
-        echo "date=$(date -u +'%Y%m%d')" >> $GITHUB_OUTPUT
-      shell: bash
-
-    - name: Cache Buildozer global directory
-      uses: actions/cache@v3
-      with:
-        path: ~/.buildozer
-        key: buildozer-global-${{ runner.os }}-${{ steps.get-date.outputs.date }}
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-packages: 'buildozer cython'
+        python-version: '3.10'
 
-    - name: Install platform dependencies
+    - name: Install buildozer and cython
+      run: |
+        pip install --user --upgrade buildozer cython
+
+    - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libffi-dev python3-dev autoconf automake libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libsqlite3-dev libbz2-dev
+        sudo apt-get install -y build-essential ccache git libffi-dev libssl-dev libheaders-v4l2-dev libgdbm-dev libnss3-dev libsqlite3-dev libreadline-dev libbz2-dev python3-dev-is-python3 unzip zip openjdk-17-jdk
 
     - name: Build with Buildozer
       run: |
-        yes | buildozer android debug
+        yes | ~/.local/bin/buildozer android debug
 
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v3
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
       with:
         name: package
         path: bin/*.apk
